@@ -1,0 +1,80 @@
+<html>  
+ <title>Image Segmentation Annotation</title>
+ <head>  
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+	<style type="text/css">
+	.xlink {cursor:default}
+	.hlink{cursor:help}
+	</style>
+</head>  
+<body> 
+<h2 align="center" style="color:#c00">Image Segmentation Annotation - Instructions</h2>
+
+<h3>What to Do:</h3>
+<div style="font-size:larger">Adjust the outline of the object to make it <b>as accurate as possible</b>, like in the example below.</div>
+
+<h3>Interface Instructions</h3>
+<ul>
+<li>Remember to <b>accept the hit</b> before you proceed!</li>
+<li>Move the slider on the left or the mousewheel to <b>zoom</b> in and out of the image.</li>
+<li>Once you have zoomed in, the image can be moved via drag and drop.</li>
+<li>Press the <b>contrast</b> button on the left to change contrast (currently disabled).</li>
+<li>Press the <b>reset</b> button on the left to reset the annotation.</li>
+<li><b>You should zoom in and change the contrast</b> of the image to see details clearly.</li>
+<li>If you cannot see a part of the object (e.g. because it is hidden behind another object, or othwerwise concealed), put the outline to where you think it should be, based on the reference image on the right.</li>
+<li>Move individual points, or <b>move or stretch</b> the outline by dragging on the cross in the middle, or the controls on the sides.</li>
+<li>Please remember that we need a <b>very high accuracy</b>, so please zoom in often ;)</li>
+<li>Press the submit button at the top of the page to submit your results.</li>
+</ul>
+
+<h3>Here is an example of acceptable work and bad work:</h3>
+<table>
+	<td>
+		This is good work and will be accepted:
+		<img src="images/car.png" style="width:400px;height:400px"><br>
+		Note how even the smallest details are annotated.<br>
+	</td>
+	<td>
+		This is bad work and will be rejected:
+		<img src="images/CarBad.png" style="width:400px;height:400px"><br>
+		The outline is only loosely marked. <br>
+	</td>
+</table>
+
+
+<h3>Instructional video</h3>
+You can also watch the following video (it is just two minutes), where you can see the webinterface in action. Please watch in <b>HD720p and full screen mode: </b><br>
+<br>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/K0rn7gLjW3Q?rel=0" frameborder="0" allowfullscreen></iframe>
+<br>
+<br>
+<b> Please take our examples as a lower accuracy limit of your work! </b> <br>In case you do this task for the first time and want to practice: You will always find a few HITs in the Mechanical Turk Sandbox. Search for "Image Segmentation".<br>
+
+
+<h3>Further Hints and Troubleshooting</h3>
+<ul>
+<li>For some images you can change the contrast, if the image is too dark.</li>
+<li>Unfortunately some images might not be available in colors.</li>
+<li>If the image is not displayed, please reload the page.</li>
+<li>Currently this is not working with Internet Explorer. Please try <a href="http://www.mozilla.org/en-US/firefox/fx/" target="_blank">Mozilla Firefox</a>.</li>
+</ul>
+
+<h3>Why Solve This HIT?</h3>
+We are trying to find pixel positions in image sequences (videos) which can be found again in subsequent frames (time steps).<br>
+A first step to solve this problem is to track coherent regions in the video.
+This is called segmentation.
+<b>Scientists have been trying to solve this problem automatically for decades</b>, but it seems very difficult for the computer to solve this task.<br>
+Yet, researchers have found some ways to do feature tracking and they would like to know if they can outsmart us humans.<br>
+Therefore, <b>we now ask you to outsmart computers</b> by finding the best possible features in a first image and their respective correspondences in a second image.<br>
+Once we know such correspondences we can do a lot of fun things!
+Have a look <a href="http://www.youtube.com/watch?v=quGhaggn3cQ" target="_blank">here</a>,
+<a href="http://www.youtube.com/watch?v=UrlsnQ32YhY" target="_blank">here</a> and
+<a href="http://www.youtube.com/watch?v=7xS6AYXxx3w" target="_blank">here</a> to get a rough idea ;)<br>
+(Please note that we have not created these videos and are not responsible for their contents. The owners of these videos are the respective companies - Microsoft, Adobe and Apple!)
+
+<h3>Problems?</h3>
+We are be happy to receive suggestions for improvements or any other feedback you want to share!<br>
+Please use the text form you find below the annotation tool.
+
+</body>  
+</html>  

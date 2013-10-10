@@ -1,0 +1,56 @@
+<html>
+  <title>AMT : Image Segmentation</title>
+  <head>
+    <script src="./javascripts/jquery.min.js"></script>
+    <script src="./javascripts/jquery.mousewheel.js"></script>
+    <script src="./javascripts/jquery-ui.min.js"></script>
+    <script src="./javascripts/spin.min.js"></script>
+    <script src="./javascripts/segmentation.js"></script>
+    <link rel="stylesheet" href="./stylesheets/jquery-ui-1.8.17.custom.css" />
+    <link href="./stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+    <link href="./stylesheets/print.css" media="print" rel="stylesheet" type="text/css" />
+    <!--[if lt IE 8]>
+        <link href="./stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="container">
+      <h1>Adjust the outline of the object</h1>
+      <p>Read these short <a href=segmentation_instructions.html target="_blank"
+          class="hlink">instructions</a> before you start, they will make
+        completing the task easier. If you won't follow the instructions, your
+        work will be REJECTED. </p> <p> We would be happy to receive
+        suggestions for improvement, or any other feedback that you want to
+        share in the form below.
+      </p>
+      <form id="mturk_form" method="post" action="http://www.mturk.com/mturk/externalSubmit">
+        <input type="hidden" id="assignmentId" name="assignmentId" value="">
+        <input type="hidden" id="segpoly" name="segpoly" value="">
+        <input type="hidden" id="duration" name="duration" value="">
+        <input id="hint" type="text" size=50 id="feedback" name="feedback" value="You can leave your feedback here">
+        <input id="no-hint" type="text" size=50 id="feedback" name="feedback" value="">
+        <input id="submitButton" type="button" name="Submit Results" value="Submit Results" onClick="submitResults()">
+      </form>
+
+      <div id="functions">
+        <div id="controls"> <button onclick="change_contrast()" id="change_contrast">Change contrast</button>
+    <button onclick="reset_annotation()">Reset</button>
+        </div>
+        <div id="zoom-value">
+          <b>Zoom</b>
+          <span id='zoom'></span>
+        </div>
+        <div id="zoom-slider">
+          <div id="slider"></div>
+        </div>
+      </div>
+	  <div id="segmentation">
+        <canvas id="segmentation_canvas">
+        <p>We're sorry, but the image cannot be displayed in your browser</p>
+        </canvas>
+		<canvas id="firstframe_canvas">
+        </canvas>
+      </div>
+    </div>
+  </body>
+</html>

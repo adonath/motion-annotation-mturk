@@ -1,0 +1,115 @@
+<html>  
+  <head>  
+    <title>Feature Point Annotation</title>
+    <link href="jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="jquery.min.js"></script>
+    <script src="bootstrap-alert.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="motion.js"></script>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css" type="text/css" media="all" />
+    <!--[if IE]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+    <style type="text/css" media="all">
+      .active {
+        background-color: #DFF0D8;
+      }
+    </style>
+  </head>
+  <body> 
+    <div class='container'>
+      <div class='page-header'>
+        <h1>Feature Point Annotation</h1>
+        <p class='lead'> 
+          Please read the following <a href=feature_points_instructions.html target="_blank" class="hlink">instructions</a> before you start, it will make completing the task easier. If you won't follow the instructions, your work will be REJECTED.
+        </p>
+      </div>
+      <div class='row'>
+        <div class='span3'>
+          <h2>Your progress</h2>
+          <div class='control'>
+            <p class='count'>
+              You haven't found any correspondences yet.
+            </p>
+            <div class='ctable'>
+            </div>
+            <hr/>
+            <form id="mturk_form" method="POST" action="http://www.mturk.com/mturk/externalSubmit">
+              <span class='help-block'>
+                We would be happy to receive suggestions for improvement, or any other feedback that you want to share in the form below:
+              </span>
+              <div class='form-fields'>
+                <input type="hidden" id="assignmentId" name="assignmentId" value="">
+                <input type="hidden" id="correspondences" name="correspondences" value="">
+                <input type="hidden" id="duration" name="duration" value="">
+                <input type="text" id="feedback" name="feedback" value="" placeholder="You can leave your feedback here.">
+              </div>
+              <div class='form-actions'>
+                <input id="submitButton" type="button" name="Submit Results" value="Submit Results" onClick="submit_results()" class='btn'>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class='span9'>
+          <div class='row'>
+            <div class='span4'>
+              <div class='well c1 active'>
+                <canvas id="canvas_first">
+                <p>We're sorry, but the image cannot be displayed in your browser</p>
+                </canvas>
+              </div>
+            </div>
+            <div class='span1'>
+              &nbsp;
+            </div>
+            <div class='span4'>
+              <div class='well c2'>
+                <canvas id="canvas_second">
+                <p>We're sorry, but the image cannot be displayed in your browser</p>
+                </canvas>
+              </div>
+            </div>
+          </div>
+          <div class='row'>
+            <div class='span6'>
+              <div class='messages'>
+                <div class='alert alert-success'>
+                  <a class='close' data-dismiss='alert'>&times;</a>
+                  Start on the left image. Please choose a Pixel as a Feature
+                  Point.
+                </div>
+              </div>
+            </div>
+            <div class='span3'>
+              <div class='error alert alert-error'>
+                  <a class='close' data-dismiss='alert'>&times;</a>
+                  Error will be shown here.
+              </div>
+            </div>
+          </div>
+          <div class='row'>
+            <div class='span3'>
+              <div class='well'>
+                <canvas id="canvas_first_cutout">
+                <p>We're sorry, but the image cannot be displayed in your browser</p>
+                </canvas>
+              </div>
+            </div>
+            <div class='span3'>
+              <div class='well'>
+                <canvas id="canvas_second_cutout">
+                <p>We're sorry, but the image cannot be displayed in your browser</p>
+                </canvas>
+              </div>
+            </div>
+            <div class='span3'>
+              <div class='well c3'>
+                <canvas id="canvas_diff">
+                <p>We're sorry, but the image cannot be displayed in your browser</p>
+                </canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

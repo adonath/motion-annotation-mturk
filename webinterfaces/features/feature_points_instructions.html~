@@ -1,0 +1,91 @@
+<html>  
+ <title>Feature Point Annotation</title>
+ <head>  
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+	<style type="text/css">
+	.xlink {cursor:default}
+	.hlink{cursor:help}
+	</style>
+</head>  
+<body> 
+<h2 align="center" style="color:#c00">Feature Point Annotation - Instructions</h2>
+
+<h3>What to Do</h3>
+<div style="font-size:larger;">The aim is to find <b>eight noticeable points</b> in the first image and their corresponding locations in the second image <b>as accurately as possible.</b></div>
+
+<h3>Interface Instructions</h3>
+The <b style="color:#c00">first step</b> is:
+<ul>
+<li>Remember to <b>accept the hit</b> before you proceed!</li>
+<li>Please find a "good" point (see below) by moving the mouse pointer on the left image. <b>Begin with the best point you can find</b>.</li>
+<li>When the red circle is <b>exactly</b> above the "good" point, left-click once.</li>
+<li><b>Good points</b> are features you will easily find in the second image, such as <b>sharp corners</b> or the centers of <b>small spots</b>.</li>
+<li>Please be sure that the selected point is located such that you can easily relocalize it with <b>high accuracy</b>.</li>
+<li>If you accidentially clicked: no worries, you can later delete wrong points using the waste icon in the table on the left.</li>
+<li>Once you've selected the point, the region around (marked by the red rectangle) will appear in the magnifier below. </li>
+</ul>
+The <b style="color:#c00">second step</b> is:
+<ul>
+<li>Try to position the cursor in the right image onto <b>exactly the same point</b> as in the first image.</li>
+<li>Use the <b>magnifier</b> in the middle to work <b>as accurate as possible.</b></li>
+<li>The third magnifier on the right shows the difference between the to regions: If you are <b>close to the first point, it will get darker.</b> If you are on the right point it will be <b>nearly black.</b></li>
+<li>Another help for finding the right position in the second image, is the number shown in the red box: <b>It should be as small as possible.</b></li>
+<li>Once you are satisfied: Click again and proceed to step three.</li>
+
+</ul>
+The <b style="color:#c00">third step</b> is:
+<ul>
+<li><b>Fine-tune </b> the position of the point in the second image, by using the <b>a-, s-, d-, w-key</b>.</li>
+<li>As you tap the keys, you will notice that the cursor moves only minimal and that the error in the red box changes.</li>
+<li>Try to find the <b>minimum of the number in the red box</b>, but <b style="color:#c00">don't move away too much</b> from your original position. </li>
+<li>Once you've found the position, where the <b>error is as small as possible, hit the ENTER key.</b></li>
+<li>The point will now be listed in the table on the left. You can <b>remove points</b>, by clicking on the waste icon in the table.</li>
+<li>Continue with step one, <b>until you have found <b style="color:#c00">FOUR</b> corresponding points!</b> </li>
+</ul>
+
+General hints:
+<ul>
+<li> <b>The quality (i.e. the agreement of the two points) is very important!</b></li>
+<li>The points you choose should be one the one hand be <b>evenly distributed</b> in the left image and on the other hand be <b>as easily trackable as possible</b>.</li>
+<li>If in doubt which point to choose, <b>the "trackability" is more important</b>.</li>
+<li>Once all points have been added, press the submit button at the top of the page to <b>submit your results.</b></li>
+</ul>
+
+<h3>Instructional video</h3>
+You can also watch the following video (it is just two minutes), where you can see the webinterface in action. Please watch in <b>HD720p!</b><br>
+<br>
+<iframe width="960" height="540" src="https://www.youtube.com/embed/gqqVK3RhDzM?rel=0" frameborder="0" allowfullscreen></iframe>
+<br>
+
+
+
+
+
+<h3>Further Hints and Troubleshooting</h3>
+<ul>
+<li>In case you do this task for the first time and want to practice: You will always find a few HITs in the Mechanical Turk Sandbox. Search for "Image Segmentation".</li>
+<li><b> Please take our examples as a lower accuracy limit of your work! </b></li>
+<li>For some images you can change the contrast, if the image is too dark.</li>
+<li>Unfortunately some images might not be available in colors.</li>
+<li>If the image is not displayed or to big, please reload the page.</li>
+<li>Currently this is not working with Internet Explorer. Please try <a href="http://www.mozilla.org/en-US/firefox/fx/" target="_blank">Mozilla Firefox</a>.</li>
+</ul>
+
+<h3>Why Solve This HIT?</h3>
+We are trying to find pixel positions in image sequences (videos) which can be found again in subsequent frames (time steps).<br>
+This is called feature tracking or correspondence search.
+<b>Scientists have been trying to solve this problem automatically for decades</b>, but it seems very difficult for the computer to solve this task.<br>
+Yet, researchers have found some ways to do feature tracking and they would like to know if they can outsmart us humans.<br>
+Therefore, <b>we now ask you to outsmart computers</b> by finding the best possible features in a first image and their respective correspondences in a second image.<br>
+Once we know such correspondences we can do a lot of fun things!
+Have a look <a href="http://www.youtube.com/watch?v=quGhaggn3cQ" target="_blank">here</a>,
+<a href="http://www.youtube.com/watch?v=UrlsnQ32YhY" target="_blank">here</a> and
+<a href="http://www.youtube.com/watch?v=7xS6AYXxx3w" target="_blank">here</a> to get a rough idea ;)<br>
+(Please note that we have not created these videos and are not responsible for their contents. The owners of these videos are the respective companies - Microsoft, Adobe and Apple!)
+
+<h3>Problems?</h3>
+We are be happy to receive suggestions for improvements or any other feedback you want to share!<br>
+Please use the text form you find below the annotation tool.
+
+</body>  
+</html>  

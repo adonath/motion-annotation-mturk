@@ -1,0 +1,215 @@
+import sys
+import os
+import codecs
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
+
+
+
+class ReviewTool(QWidget):
+	"""
+	A tool to review the segmentation results from the turkers. It shows successively the annotations and the reviewer can choose
+	<Reject> or <Approve>. If an annotation is rejected, the corresponding Worker-ID is written in the outlier file in <MTurkLog>.
+	"""
+	def __init__(self, resultDict, outlierFile, imagePath):
+		#Read Files
+		self.outlierFilePath = outlierFile
+		self.outlierFile = codecs.open(outlierFile, "r", "utf-8")
+		self.approvedFile = codecs.open(os.path.join(os.path.dirname(outlierFile), "approved"), "r", "utf-8")
+		self.rejectedFile = codecs.open(os.path.join(os.path.dirname(outlierFile), "rejected"), "r", "utf-8")
+		self.frame = MainFrame(resultDict, outlierFile, imagePath)
+		self.frame.rejected = [line.strip() for line in self.rejectedFile.readlines()]
+		self.frame.approved = [line.strip() for line in self.approvedFile.readlines()]
+		self.frame.outlier = [line.strip() for line in self.outlierFile.readlines()]
+		self.approvedFile.close()
+		self.rejectedFile.close()
+		self.outlierFile.close()
+
+		#Set index and start image
+		self.frame.canvas.index = len(self.frame.rejected) + len(self.frame.approved) - 1
+		self.frame.canvas.nextImage()	
+
+
+	def start(self):
+		"""Start the application"""
+		self.frame.canvas.show()	
+		self.frame.show()	
+		
+
+	
+	def statistics(self):
+		pass
+
+
+	def __del__(self):
+		"""Write all data to files"""
+		self.outlierFile = codecs.open(self.outlierFilePath, "w", "utf-8")
+		self.approvedFile = codecs.open(os.path.join(os.path.dirname(self.outlierFilePath), "approved"), "w", "utf-8")
+		self.rejectedFile = codecs.open(os.path.join(os.path.dirname(self.outlierFilePath), "rejected"), "w", "utf-8")
+		
+		for assignmentId in self.frame.rejected:
+			self.rejectedFile.write("{0}\n".format(assignmentId))
+		
+		for assignmentId in self.frame.approved:
+			self.approvedFile.write("{0}\n".format(assignmentId))
+
+		for workerId in self.frame.outlier:
+			self.outlierFile.write("{0}\n".format(workerId))
+		
+		self.approvedFile.close()
+		self.rejectedFile.close()
+		self.outlierFile.close()
+
+
+
+
+class Canvas(QGraphicsView):
+	def __init__(self, window, resultDict, imagePath):
+		QGraphicsView.__init__(self)
+		self.window = window
+		self.pen =  QPen(QColor("red"))
+		self.pen.setWidth(0.5)		
+		self.canvasScene = QGraphicsScene()
+		self.setScene(self.canvasScene)
+		self.resultDict = resultDict
+		self.imagePath = imagePath
+		self.setBackgroundBrush(QBrush(Qt.black, Qt.SolidPattern))
+					
+
+	def drawImage(self, imageFile):
+		"""Draw an image on the canvas"""
+		image = QPixmap(imageFile)
+		self.canvasScene.addPixmap(image)
+		return image 
+			
+
+	def drawPolygon(self, Polygon):
+		"""Draw a polygon on the canvas"""
+		polygon = QPolygonF()
+		for point in Polygon:
+			polygon.append(QPointF(point[0], point[1]))
+		pol = self.canvasScene.addPolygon(polygon)
+		self.canvasScene.addPolygon(polygon, self.pen)
+
+
+	def getWorkerId(self):
+		return self.resultDict.values()[self.index][0][0]
+		
+
+	def getAssignmentId(self):
+		return self.resultDict.keys()[self.index]
+
+
+	def nextImage(self):
+		"""Load next image"""
+		self.index +=1 
+		
+		#Clear scene 
+		self.canvasScene.clear()
+		
+		self.window.setWindowTitle("MTurk Review Tool ({0}/{1})   Rejected: {2}   Approved: {3}".format(self.index + 1,	
+									len(self.resultDict), len(self.window.rejected), len(self.window.approved)))			
+		#Draw Image and Polygon
+		assignmentId = self.resultDict.keys()[self.index]
+		result = self.resultDict[assignmentId]
+		image = result[0][1]
+		polygon = result[0][2]
+		polygon = [round(float(point), 3) for point in polygon]
+		polygon = zip(*[iter(polygon)]*2)
+		im = self.drawImage(os.path.join(self.imagePath, image))
+		self.drawPolygon(polygon)
+
+		#update scene
+		self.canvasScene.setSceneRect(self.canvasScene.itemsBoundingRect());
+		self.fitInView(0, 0, self.canvasScene.width(), self.canvasScene.height(), 1)	
+		self.canvasScene.update(0, 0, self.canvasScene.width(), self.canvasScene.height())
+		
+
+		
+		
+class MainFrame(QMainWindow):
+	def __init__(self, resultDict, outlierFile, imagePath):
+		QMainWindow.__init__(self)
+		self.setFixedSize(500, 580)
+ 		#self.width = 710
+		#self.height = 768
+		self.setWindowTitle("MTurk Review Tool") 
+		#self.resize(self.width, self.height) 
+		#self.setMinimumSize(305, 384) 
+		self.move(0, 0) # position window frame at top left
+		#self.setWindowIcon(QIcon('mturk/ReviewTool/icon.png'))
+		self.cwidget = QWidget(self)
+		self.setCentralWidget(self.cwidget)
+		self.canvas = Canvas(self, resultDict, imagePath)
+		self.initLayout()
+		self.rejected = []
+		self.approved = []
+		self.outlier = 	[] #[line.strip() for line in self.outlierFile.readlines()]		
+		
+		
+	def initLayout(self):
+		#Layout
+		layout = QVBoxLayout()
+		layout.addWidget(self.canvas)
+
+		#Button layout
+		buttonLayout = QHBoxLayout()
+		
+		buttonReject = QPushButton("Reject")
+		buttonApprove = QPushButton("Approve")
+		buttonReject.setStyleSheet("* { background-color: rgb(255,125,100) }")
+		buttonApprove.setStyleSheet("* { background-color: rgb(125,255,100) }")
+		#buttonOutlier = QPushButton("Add to outliers") 	
+		buttonLayout.addWidget(buttonReject)
+		buttonLayout.addWidget(buttonApprove)
+		#buttonLayout.addWidget(buttonOutlier)
+
+		layout.addLayout(buttonLayout)
+	
+		#Set layout
+		self.cwidget.setLayout(layout)
+		 		
+		#Connect events
+		self.connect(buttonReject, SIGNAL("clicked()"), self.reject)
+		self.connect(buttonApprove, SIGNAL("clicked()"), self.approve)
+		#self.connect(buttonOutlier, SIGNAL("clicked()"), self.addOutlier)
+
+
+	def addOutlier(self):
+		workerId = self.canvas.getWorkerId()
+		self.outlier.append(workerId)
+	
+
+	def reject(self):
+		"""Reject annotation"""
+		assignmentId = self.canvas.getAssignmentId()
+		if assignmentId not in self.rejected:
+			self.rejected.append(assignmentId)
+			workerId = self.canvas.getWorkerId()
+			if workerId not in self.outlier:
+				self.outlier.append(workerId)			
+			
+		self.canvas.nextImage()
+		
+					
+	def approve(self):
+		"""Approve annotation"""
+		assignmentId = self.canvas.getAssignmentId()
+		if assignmentId not in self.approved:
+			self.approved.append(assignmentId)
+		self.canvas.nextImage()
+		
+	
+
+
+
+
+
+
+
+
+
+
+
+
