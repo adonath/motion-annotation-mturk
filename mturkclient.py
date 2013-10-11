@@ -11,7 +11,7 @@ from PyQt4.QtGui import (QTableWidget, QMenu, QLineEdit, QRadioButton,
                          QHBoxLayout, QPushButton, QVBoxLayout, QGroupBox,
                          QGridLayout, QStatusBar, QProgressBar, QListView,
                          QTextEdit, QApplication, QStandardItemModel,
-                         QAbstractItemView)
+                         QAbstractItemView, QMessageBox)
 
 from task import CorrespondenceTask, SegmentationTask
 from evaluation import Evaluation
@@ -74,8 +74,10 @@ class MainWindow(QWidget):
         self.setWindowIconText("MTurk Client")
         if os.path.exists(os.path.join(self.projPath, 'mturk_segmentation.ini')):
             self.task = SegmentationTask(projFile)
+            self.segmentation_mode = True
         elif os.path.exists(os.path.join(self.projPath, 'mturk_features.ini')):
             self.task = CorrespondenceTask(projFile)
+            self.segmentation_mode = False
         else:
             raise Exception('No configuration file found!')
         self.task.setParent(self)
@@ -90,7 +92,7 @@ class MainWindow(QWidget):
         self.initSettingTab()
         self.initStatusBar()
 
-        #Layout management
+        # Layout management
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabWidget)
         vbox.addWidget(self.statusBar)
@@ -109,29 +111,34 @@ class MainWindow(QWidget):
         else:
             self.setWindowTitle("MTurk Client")
 
+    def getTotalNumberOfHITs(self):
+        if self.segmentation_mode:
+            return len(self.task.videoLabelHandler.objects) * int(self.task.assignments)
+        else:
+            if self.tabWidget.widget(0).findChildren(QCheckBox)[0].isChecked():
+                shift = 25
+            else:
+                shift = 50
+            xN = len(range(0, self.task.videoLabelHandler.imageWidth - shift, shift))
+            yN = len(range(0, self.task.videoLabelHandler.imageHeight - shift, shift))
+            return xN * yN * int(self.task.assignments)
+
     def getBalance(self):
         """Get current account balance and compute costs"""
         self.balance = self.task.connection.get_account_balance()[0]
-        self.credit_label.setText("Your current account balance is:           {0}".format(self.balance))
+        self.credit_label.setText("Your current account balance is:\t\t\t{0}".format(self.balance))
 
-        if self.tabWidget.widget(0).findChildren(QCheckBox)[0].isChecked():
-            shift = 25
-        else:
-            shift = 50
-
-        xN = len(range(0, self.task.videoLabelHandler.imageWidth - shift, shift))
-        yN = len(range(0, self.task.videoLabelHandler.imageHeight - shift, shift))
-        costs = xN * yN * self.task.reward * float(self.task.assignments)
-        self.costLabel.setText("Costs per frame:\t\t\t${0}".format(costs))
+        costs = self.task.reward * self.getTotalNumberOfHITs()
+        self.costLabel.setText("Costs per frame:\t\t\t\t\t${0}".format(costs))
 
     def updateTable(self):
         appDict, rejDict = self.task.reviewTool.updateTable()
 
         for i in range(self.table_turk.rowCount()):
-            #Get workerID
+            # Get workerID
             workerID = str(self.table_turk.item(i, 0).text())
 
-            #Set rejected or approved
+            # Set rejected or approved
             if workerID in rejDict.keys():
                 self.table_turk.item(i, 2).setText(str(rejDict[workerID]))
             if workerID in appDict.keys():
@@ -141,19 +148,12 @@ class MainWindow(QWidget):
         """
         Get current status of the HITs that are being worked on and current account balance.
         """
-        #Get Status as dictionary {WorkerID:23; ...}
+        # Get Status as dictionary {WorkerID:23; ...}
         hitStatus, assignments = self.task.status()
-        if self.tabWidget.widget(0).findChildren(QCheckBox)[0].isChecked():
-            shift = 25
-        else:
-            shift = 50
-
-        xN = len(range(0, self.task.videoLabelHandler.imageWidth - shift, shift))
-        yN = len(range(0, self.task.videoLabelHandler.imageHeight - shift, shift))
-        totalAssignments = xN * yN * int(self.task.assignments)
+        totalAssignments = self.getTotalNumberOfHITs()
         self.status.emit("Finished HITs: ({0}/{1})".format(assignments, totalAssignments))
 
-        #Update Table
+        # Update Table
         for i, entry in enumerate(hitStatus):
             self.table_turk.insertRow(i)
             turker = QTableWidgetItem(entry[0])
@@ -162,22 +162,22 @@ class MainWindow(QWidget):
             approved = QTableWidgetItem(str(0))
 
             self.table_turk.setItem(i, 0, turker)
-            self.table_turk.setItem(i, 1, assignments) 
-            self.table_turk.setItem(i, 2, rejected )
+            self.table_turk.setItem(i, 1, assignments)
+            self.table_turk.setItem(i, 2, rejected)
             self.table_turk.setItem(i, 3, approved)
 
     def initSettingTab(self):
-        ###Setting Tab###
+        # ##Setting Tab###
         setting_tab = QWidget()
         setting_tab_layout = QVBoxLayout()
         self.tabWidget.addTab(setting_tab, "Settings")
 
-        #Task Box
+        # Task Box
         task_box = QGroupBox()
         task_box.setTitle(QString("Task properties"))
         task_layout = QGridLayout()
 
-        #Name
+        # Name
         name = QLabel("Name:")
         name_value = QLineEdit() 
         name_value.setText(self.task.hittypename)
@@ -186,7 +186,7 @@ class MainWindow(QWidget):
         task_layout.addWidget(name, 0, 1)
         task_layout.addWidget(name_value, 0, 2, 1, 3)
 
-        #Description
+        # Description
         description = QLabel("Description:")
         description_value = QLineEdit() 
         description_value.setText(self.task.description)
@@ -195,7 +195,7 @@ class MainWindow(QWidget):
         task_layout.addWidget(description, 1, 1)
         task_layout.addWidget(description_value, 1, 2, 1, 3)
 
-        #Keywords
+        # Keywords
         keywords = QLabel("Keywords:")
         keywords_value = QLineEdit()
         keywords_value.setText(','.join(self.task.keywords))
@@ -204,7 +204,7 @@ class MainWindow(QWidget):
         task_layout.addWidget(keywords, 2, 1)
         task_layout.addWidget(keywords_value, 2, 2, 1, 3)
 
-        #Qualification
+        # Qualification
         qualification = QLabel("Qualification [%]:")
         qualification_value = QSpinBox()
         qualification_value.setSuffix('%')
@@ -214,7 +214,7 @@ class MainWindow(QWidget):
         task_layout.addWidget(qualification, 3, 1)
         task_layout.addWidget(qualification_value, 3, 4)
 
-        #Assignments
+        # Assignments
         assignments = QLabel("Assignments:")
         assignments_value = QSpinBox()
         assignments_value.setSuffix('')
@@ -224,7 +224,7 @@ class MainWindow(QWidget):
         task_layout.addWidget(assignments, 4, 1)
         task_layout.addWidget(assignments_value, 4, 4)
 
-        #Duration
+        # Duration
         duration = QLabel("Duration [min]:") 
         duration_value = QSpinBox()
         duration_value.setSuffix('min')
@@ -234,7 +234,7 @@ class MainWindow(QWidget):
         task_layout.addWidget(duration, 5, 1)
         task_layout.addWidget(duration_value, 5, 4)
 
-        #Reward
+        # Reward
         reward = QLabel("Reward [0.01$]:")
         reward_value = QDoubleSpinBox()
         reward_value.setRange(0.01, 0.5)
@@ -246,7 +246,7 @@ class MainWindow(QWidget):
         task_layout.addWidget(reward, 6, 1)
         task_layout.addWidget(reward_value, 6, 4)
 
-        #Lifetime
+        # Lifetime
         lifetime = QLabel("Lifetime [d]:")
         lifetime_value = QSpinBox()
         lifetime_value.setSuffix('d')
@@ -256,33 +256,33 @@ class MainWindow(QWidget):
         task_layout.addWidget(lifetime, 7, 1)
         task_layout.addWidget(lifetime_value, 7, 4)
 
-        #sandbox
+        # sandbox
         sandbox = QCheckBox("Sandbox")
         sandbox.setChecked(self.task.sandbox)
         task_layout.addWidget(sandbox, 8, 1)
         task_box.setLayout(task_layout)
         task_layout.setColumnMinimumWidth(1, 120)
 
-        #Image Storage Box
+        # Image Storage Box
         storage_box = QGroupBox()
         storage_box.setTitle(QString("Image Storage"))
         storage_layout = QGridLayout()
 
-        #Host URL
+        # Host URL
         host_url = QLabel("Host-URL:")
         host_url_value = QLineEdit()
         host_url_value.setText(self.task.host_url)
         host_url_value.setEnabled(False)
         clickable(host_url_value).connect(self.enable)
 
-        #Dropbox Path
+        # Dropbox Path
         dropbox_path = QLabel("Dropbox-Path:")
         dropbox_path_value = QLineEdit()
         dropbox_path_value.setText(self.task.dropbox_path)
         dropbox_path_value.setEnabled(False)
         clickable(dropbox_path_value).connect(self.enable)
 
-        #Dropbox or S3
+        # Dropbox or S3
         usingS3 = QRadioButton("S3")
         usingS3.setChecked(self.task.usingS3)
         usingS3.setEnabled(False)
@@ -294,7 +294,7 @@ class MainWindow(QWidget):
         storage_layout.addWidget(dropbox_path, 1, 1)
         storage_layout.addWidget(dropbox_path_value, 1, 2, 1, 3)
 
-        #Add Layouts
+        # Add Layouts
         save_button = QPushButton("Save Settings")
         setting_tab_layout.addWidget(task_box)
         setting_tab_layout.addWidget(storage_box)
@@ -305,25 +305,28 @@ class MainWindow(QWidget):
         storage_layout.addWidget(usingDropbox, 3, 1)
         storage_layout.addWidget(save_button, 3, 4)
 
-        #storage_layout.addStretch(1)
+        # storage_layout.addStretch(1)
         storage_box.setLayout(storage_layout)
 
     def initListView(self):
         """Init status table"""
-        #List Box model
+        # List Box model
         model = QStandardItemModel()
 
-        #Init list objects
+        # Init list objects
         for i, frame in enumerate(self.task.videoLabelHandler.files):
-            item = QStandardItem(frame + "    {0} Objects".format(len(self.task.videoLabelHandler.objects)))
+            item = QStandardItem(frame + "\t{0} Objects".format(len(self.task.videoLabelHandler.objects)))
             item.setCheckState(Qt.Checked)
             item.setCheckable(True)
-            if i == len(self.task.videoLabelHandler.files) - 1:
-                item.setCheckState(Qt.Unchecked)
-                item.setEnabled(False)
             model.appendRow(item)
 
-        #Set model
+        if self.segmentation_mode:
+            model.item(0).setEnabled(False)
+        else:
+            model.item(i).setCheckState(Qt.Unchecked)
+            model.item(i).setEnabled(False)
+
+        # Set model
         self.view.setModel(model)
 
     def initUploadTab(self):
@@ -332,7 +335,7 @@ class MainWindow(QWidget):
         upload_tab_layout = QVBoxLayout()
         self.tabWidget.addTab(upload_tab, "Upload HITs")
 
-        #Frames Box
+        # Frames Box
         frames_box = QGroupBox()
         frames_box.setTitle("Frame selection")
         frames_layout = QVBoxLayout()
@@ -340,7 +343,7 @@ class MainWindow(QWidget):
         frames_label = QLabel("Select which frames to upload:")
         frames_layout.addWidget(frames_label)
 
-        #Init list view
+        # Init list view
         self.view = QListView()
         frames_layout.addWidget(self.view)
         upload_button = QPushButton("Upload HITs")
@@ -349,7 +352,7 @@ class MainWindow(QWidget):
         frames_layout.addWidget(upload_button)
         frames_box.setLayout(frames_layout)
 
-        #MotionOptions Box
+        # MotionOptions Box
         motionOptionsBox = QGroupBox()
         motionOptionsBox.setTitle("Motion Annotation Options")
         patchLabel = QLabel("Patch size: 50x50 Pixels")
@@ -360,7 +363,7 @@ class MainWindow(QWidget):
         motionOptionsBoxLayout.addWidget(patchLabel)
         motionOptionsBox.setLayout(motionOptionsBoxLayout)
 
-        #LayerOptions Box
+        # LayerOptions Box
         options_box = QGroupBox()
         options_box.setTitle('Layer Annotation Options')
         blurLabel = QLabel("Amount: 4 Pixels")
@@ -369,9 +372,14 @@ class MainWindow(QWidget):
         options_box_layout.addWidget(blur)
         options_box_layout.addWidget(blurLabel)
         options_box.setLayout(options_box_layout)
-        options_box.setEnabled(False)
 
-        #Costs
+        # Disable not needed options
+        if self.segmentation_mode:
+            motionOptionsBox.setEnabled(False)
+        else:
+            options_box.setEnabled(False)
+
+        # Costs
         costs_box = QGroupBox()
         costs_box.setTitle('Costs')
         costs_box_layout = QVBoxLayout()
@@ -381,7 +389,7 @@ class MainWindow(QWidget):
         costs_box_layout.addWidget(self.costLabel)
         costs_box.setLayout(costs_box_layout)
 
-        #Upload Box
+        # Upload Box
         upload_tab_layout.addWidget(frames_box)
         upload_tab_layout.addWidget(motionOptionsBox)
         upload_tab_layout.addWidget(options_box)
@@ -390,7 +398,7 @@ class MainWindow(QWidget):
 
     def initStatusBar(self):
         """Init status bar"""
-        #Status bar
+        # Status bar
         self.progress.connect(self.updateProgressBar)
         self.status.connect(self.updateStatusBar)
         self.statusBar = QStatusBar()
@@ -398,12 +406,12 @@ class MainWindow(QWidget):
         self.statusBar.addPermanentWidget(progress)
 
     def initDownloadTab(self):
-        ###Download Tab###
+        # # # Download Tab# # # 
         download_tab = QWidget()
         download_tab_layout = QVBoxLayout()
         self.tabWidget.addTab(download_tab, "Download HITs")
 
-        #Status
+        # Status
         status_box = QGroupBox()
         status_box.setTitle("Status")
         status_layout = QGridLayout()
@@ -413,9 +421,9 @@ class MainWindow(QWidget):
         self.table_turk.setColumnWidth(1, 50)
         self.table_turk.setColumnWidth(2, 90)
         self.table_turk.setColumnWidth(3, 90)
-        #self.table_turk.verticalHeader().setVisible(False)
+        # self.table_turk.verticalHeader().setVisible(False)
 
-        #Set Headers
+        # Set Headers
         header_0 = QTableWidgetItem()
         header_0.setText("Turker")
         self.table_turk.setHorizontalHeaderItem(0, header_0)
@@ -434,7 +442,7 @@ class MainWindow(QWidget):
 
         status_layout.addWidget(self.table_turk, 0, 0, 1, 2)
 
-        #Status Button
+        # Status Button
         status_button = QPushButton('Update Status')
         status_button.clicked.connect(self.getStatus)
 
@@ -442,12 +450,12 @@ class MainWindow(QWidget):
         status_box.setLayout(status_layout)
         download_tab_layout.addWidget(status_box) 
 
-        #Download Button
+        # Download Button
         download_button = QPushButton("Download Results")
         download_button.clicked.connect(self.download)
         status_layout.addWidget(download_button, 1, 0)
 
-        #Options Box
+        # Options Box
         options_box = QGroupBox()
         options_box.setTitle("Import results")
         options_box_layout = QGridLayout()
@@ -458,7 +466,7 @@ class MainWindow(QWidget):
         review_button = QPushButton("Review Results")
         review_button.clicked.connect(self.review)
 
-        #Import Button
+        # Import Button
         import_button = QPushButton("Import results")
         import_button.clicked.connect(self.importResults)
 
@@ -477,7 +485,7 @@ class MainWindow(QWidget):
         manage_tab_layout = QVBoxLayout()
         self.tabWidget.addTab(manage_tab, "Manage HITs")
 
-        #Send Box
+        # Send Box
         send_box_layout = QVBoxLayout()
         subject = QLineEdit()
         subject_label = QLabel("Subject:")
@@ -496,7 +504,7 @@ class MainWindow(QWidget):
         workerID = QLineEdit()
 
         def checkState():
-            #Set enabled if checked
+            # Set enabled if checked
             if allTurkers.isChecked():
                 workerIDLabel.setEnabled(False)
                 workerID.setEnabled(False)
@@ -504,18 +512,18 @@ class MainWindow(QWidget):
                 workerIDLabel.setEnabled(True)
                 workerID.setEnabled(True)
 
-        #Connect to check state
+        # Connect to check state
         allTurkers.clicked.connect(checkState)
         singleTurker.clicked.connect(checkState)
         checkState()
 
-        #Choose if single or all turkers receive message
+        # Choose if single or all turkers receive message
         chooseSendLayout = QHBoxLayout()
         chooseSendLayout.addWidget(singleTurker)
         chooseSendLayout.addWidget(workerIDLabel)
         chooseSendLayout.addWidget(workerID)
 
-        #Send box layout
+        # Send box layout
         send_box = QGroupBox()
         send_box_layout.addWidget(allTurkers)
         send_box_layout.addLayout(chooseSendLayout)
@@ -528,7 +536,7 @@ class MainWindow(QWidget):
         send_box.setLayout(send_box_layout)
         manage_tab_layout.addWidget(send_box)
 
-        #Pay box
+        # Pay box
         payBox = QGroupBox()
         payBox.setTitle("Pay Workers")
         payBox_layout = QGridLayout()
@@ -553,7 +561,7 @@ class MainWindow(QWidget):
         payBox.setLayout(payBox_layout)
         manage_tab_layout.addWidget(payBox)
 
-        #Delete Box
+        # Delete Box
         deleteBox = QGroupBox()
         deleteBox.setTitle("Clean up finished HITs")
         deleteBox_layout = QHBoxLayout()
@@ -565,17 +573,17 @@ class MainWindow(QWidget):
         deleteBox.setLayout(deleteBox_layout)
         manage_tab_layout.addWidget(deleteBox)
 
-        #Evaluation Button
+        # Evaluation Button
         evalButton = QPushButton("Evaluate")
         evalButton.clicked.connect(self.evaluate)
         manage_tab_layout.addWidget(evalButton)
 
-        #Add layouts to tab
+        # Add layouts to tab
         manage_tab.setLayout(manage_tab_layout)
 
     def SaveSettings(self):
         """Save settings to config file"""
-        #Line edits
+        # Line edits
         lineEdits = self.tabWidget.widget(3).findChildren(QLineEdit)
         self.task._conf.set('Task', 'name', lineEdits[0].text())
         self.task._conf.set('Task', 'Description', lineEdits[1].text())
@@ -583,7 +591,7 @@ class MainWindow(QWidget):
         self.task._conf.set('Image storage', 'host-url', lineEdits[8].text())
         self.task._conf.set('Image storage', 'dropbox-path', lineEdits[9].text())
 
-        #Spin boxes
+        # Spin boxes
         spinBoxes = self.tabWidget.widget(3).findChildren(QSpinBox)
         self.task._conf.set('Task', 'assignments', spinBoxes[1].value())
         self.task._conf.set('Task', 'qualification', spinBoxes[0].value())
@@ -591,25 +599,25 @@ class MainWindow(QWidget):
         self.task._conf.set('Task', 'lifetime', spinBoxes[3].value())
         self.task._conf.set('Task', 'reward', self.tabWidget.widget(3).findChild(QDoubleSpinBox).value())
 
-        #Dropbox usage
+        # Dropbox usage
         radioButtons = self.tabWidget.widget(3).findChildren(QRadioButton)
         self.task._conf.set('Task', 'usings3', radioButtons[0].isChecked())
         self.task._conf.set('Task', 'usingdropbox', radioButtons[1].isChecked())
 
-        #Sandbox
+        # Sandbox
         self.task._conf.set('Task', 'sandbox', self.tabWidget.widget(3).findChild(QCheckBox).isChecked())
 
-        #Write config file
-        self.task._conf.write(open('mturk.ini', 'w'))
+        # Write config file
+        self.task.saveConfigFile()
 
-        #Disable objects
+        # Disable objects
         for obj in lineEdits:
             obj.setEnabled(False)
         for obj in spinBoxes:
             obj.setEnabled(False)
         self.tabWidget.widget(3).findChild(QDoubleSpinBox).setEnabled(False)
 
-        #Reload Config File
+        # Reload Config File
         self.task.loadConfigFile()
         self.task.connect()
         self.setTitle()
@@ -632,7 +640,7 @@ class MainWindow(QWidget):
 
     def sendMessage(self):
         """Send message to turkers"""
-        #Goes the message to all or a single turker?
+        # Goes the message to all or a single turker?
         if self.tabWidget.widget(2).findChildren(QRadioButton)[1].isChecked():
             workerID = self.tabWidget.widget(2).findChildren(QLineEdit)[0].text()
             if workerID == "":
@@ -641,7 +649,7 @@ class MainWindow(QWidget):
         else:
             workerID = ""
 
-        #Get subject and message
+        # Get subject and message
         subject = self.tabWidget.widget(2).findChildren(QLineEdit)[1].text()
         message = self.tabWidget.widget(2).findChildren(QTextEdit)[0].document()
         self.task.sendMessage(subject, message.toPlainText(), workerID=workerID)
@@ -649,13 +657,21 @@ class MainWindow(QWidget):
 
     def upload(self):
         """Upload HITs"""
-        if self.tabWidget.widget(0).findChildren(QCheckBox)[1].isChecked():
-            self.task.videoLabelHandler.blurOutlines()
-        if self.tabWidget.widget(0).findChildren(QCheckBox)[0].isChecked():
-            overlapping = True
-        else:
-            overlapping = False
-        self.task.upload(overlapping)
+        message_box = QMessageBox()
+        reply = message_box.question(self, 'Upload HITs',
+                "Are you sure you want to upload the HITs?", QMessageBox.Yes, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            if self.segmentation_mode:
+                if self.tabWidget.widget(0).findChildren(QCheckBox)[1].isChecked():
+                    self.task.videoLabelHandler.blurOutlines()
+                self.task.upload()
+            else:
+                if self.tabWidget.widget(0).findChildren(QCheckBox)[0].isChecked():
+                    overlapping = True
+                else:
+                    overlapping = False
+                self.task.upload(overlapping)
 
     def updateProgressBar(self, value):
         self.statusBar.children()[2].setValue(value)
@@ -689,7 +705,7 @@ class MainWindow(QWidget):
         evaluation.HITStatistics()
         evaluation.workingTimePerWorker()
         evaluation.workerStatistics()
-        #evaluation.featurePointStatistics()
+        # evaluation.featurePointStatistics()
 
 
 if __name__ == "__main__":

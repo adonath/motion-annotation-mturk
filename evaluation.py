@@ -98,7 +98,6 @@ class PolygonList:
             if new_disagreement < old_disagreement:
                 best_match_polygons = polygon_A, polygon_B
             old_disagreement = new_disagreement
-        #print best_match_polygons
         return best_match_polygons[0].intersected(best_match_polygons[1])
 
     def variationAroundAverage(self, polygon):
@@ -268,7 +267,6 @@ class Evaluation(QObject):
                 angleList.append(vector.angle())
 
             hist = plt.hist(normList, np.arange(0.6, 1.8, 0.1))
-            #print np.ceil(max(hist[0])/10.)*10
             #plt.ylabel("Number")
             plt.xlabel("Absolute Value [pix]")
             plt.ylim(0.001, np.ceil(max(hist[0]) / 10.) * 10)
@@ -279,7 +277,6 @@ class Evaluation(QObject):
 
             angleList = np.array(angleList)
             angleList = np.select([angleList > 180, angleList <= 180], [angleList - np.ones_like(angleList)*360, angleList])
-            #print angleList
             hist = plt.hist(angleList, np.arange(-27.5, 32.5, 5))
             #plt.ylabel("Number")
             plt.xlabel("Angle [deg]")

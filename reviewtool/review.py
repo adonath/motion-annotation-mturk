@@ -165,12 +165,14 @@ class ReviewTool(QMainWindow):
     def start(self):
         """Start the application"""
         self.show()
-        
+
     def save(self):
         """Write all data to files"""
         self.outlierFile = codecs.open(self.outlierFilePath, "w", "utf-8")
-        self.approvedFile = codecs.open(os.path.join(os.path.dirname(self.outlierFilePath), "approved"), "w", "utf-8")
-        self.rejectedFile = codecs.open(os.path.join(os.path.dirname(self.outlierFilePath), "rejected"), "w", "utf-8")
+        self.approvedFile = codecs.open(os.path.join(os.path.dirname(
+                                self.outlierFilePath), "approved"), "w", "utf-8")
+        self.rejectedFile = codecs.open(os.path.join(os.path.dirname(
+                                self.outlierFilePath), "rejected"), "w", "utf-8")
 
         for assignmentId in self.rejected:
             self.rejectedFile.write("{0}\n".format(assignmentId))
